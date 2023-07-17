@@ -11,12 +11,13 @@ export default function Home() {
   const [guess, setGuess] = useState("");
   const [correct, setCorrect] = useState(false);
   const [colors, setColors] = useState([]);
+  
   const [guesses, setGuesses] = useState([]);
   const [numGuesses, setNumGuesses] = useState(0);
   const [alphColors, setAlphColors] = useState([]);
+  const [loaded, setLoaded] = useState(false);
 
   const inpRef = useRef(null);
-
   const alphabet = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Z', 'X', 'C', 'V', 'B', 'N', 'M'];
 
   const keepFocus = useCallback(e => {
@@ -83,6 +84,7 @@ export default function Home() {
     setColors(cls);
     setAlphColors(alpColors);
     setWord(word.toUpperCase());
+    setLoaded(true);
   }, [])
 
   const onChange = (e) => {
@@ -189,7 +191,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className={`${loaded ? "" : "hidden"} flex h-screen`}>
       <div className="select-none m-auto">
         <form onSubmit={onSubmit} className={`opacity-0 ${numGuesses == 5 && !correct ? "hidden" : ""}`}>
           <input ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit" value={guess} onChange={onChange}></input>
