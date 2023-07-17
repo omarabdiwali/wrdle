@@ -209,7 +209,7 @@ export default function Home() {
     let cpyGuess = guess;
     let letter = e.target.id;
 
-    if (correct) return;
+    if (correct || numGuesses == 5) return;
 
     if (letter == "Enter") {
       onSubmit(e);
