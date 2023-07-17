@@ -66,7 +66,7 @@ export default function Home() {
       valid = validWords.filter(d => regText.test(d)).length > 0;
     }
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       gs.push("     ")
     }
 
@@ -77,6 +77,7 @@ export default function Home() {
       }
 
       cnt.push("bg-slate-400");
+
       if (i == 19) {
         alpColors.push("bg-slate-500 text-xs text-black");
       } else {
@@ -85,6 +86,7 @@ export default function Home() {
     }
 
     cls.push(cnt);
+    cls.push(["bg-slate-400", "bg-slate-400", "bg-slate-400", "bg-slate-400", "bg-slate-400"])
     alpColors.push("bg-slate-500 text-black");
     alpColors.push("bg-slate-500 text-black");
     alpColors.push("bg-slate-500 text-xs text-black");
@@ -139,7 +141,7 @@ export default function Home() {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    if (guess.length != 5 || correct || numGuesses == 5) return;
+    if (guess.length != 5 || correct || numGuesses == 6) return;
 
     let regText = new RegExp(`^${guess.toLowerCase()}$`);
     let valid = validWords.filter(d => regText.test(d)).length > 0;
@@ -209,7 +211,7 @@ export default function Home() {
     let cpyGuess = guess;
     let letter = e.target.id;
 
-    if (correct || numGuesses == 5) return;
+    if (correct || numGuesses == 6) return;
 
     if (letter == "Enter") {
       onSubmit(e);
@@ -239,12 +241,12 @@ export default function Home() {
 
       <div className={`${loaded ? "" : "hidden"} flex h-screen`}>
         <div className="select-none m-auto">
-          <form onSubmit={onSubmit} className={`opacity-0 ${numGuesses == 5 && !correct ? "hidden" : ""}`}>
+          <form onSubmit={onSubmit} className={`opacity-0 ${numGuesses == 6 && !correct ? "hidden" : ""}`}>
             <input ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit" value={guess} onChange={onChange}></input>
           </form>      
 
           <center>
-            <div className={`text-xl ${numGuesses == 5 && !correct ? "" : "hidden"}`}>
+            <div className={`text-xl ${numGuesses == 6 && !correct ? "" : "hidden"}`}>
               Word was: {word}
             </div>
           </center>
