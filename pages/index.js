@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react"
 import { words } from 'popular-english-words';
+import Head from "next/head";
 
 var allWords = require('an-array-of-english-words')
 let validWords = allWords.filter(d => d.length == 5);
@@ -18,10 +19,12 @@ export default function Home() {
   const [loaded, setLoaded] = useState(false);
 
   const inpRef = useRef(null);
-  const alphabet = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Z', 'X', 'C', 'V', 'B', 'N', 'M'];
+  const alphabet = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Enter', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<<'];
 
   const keepFocus = useCallback(e => {
-    inpRef.current.focus();
+    if (inpRef) {
+      inpRef.current.focus();
+    }
   }, [])
 
   const autoFocusFn = useCallback(element => {
@@ -74,11 +77,17 @@ export default function Home() {
       }
 
       cnt.push("bg-slate-400");
-      alpColors.push("bg-slate-500 text-black");
+      if (i == 19) {
+        alpColors.push("bg-slate-500 text-xs text-black");
+      } else {
+        alpColors.push("bg-slate-500 text-black");
+      }
     }
 
     cls.push(cnt);
     alpColors.push("bg-slate-500 text-black");
+    alpColors.push("bg-slate-500 text-black");
+    alpColors.push("bg-slate-500 text-xs text-black");
 
     setGuesses(gs);
     setColors(cls);
@@ -87,16 +96,22 @@ export default function Home() {
     setLoaded(true);
   }, [])
 
-  const onChange = (e) => {
+  const onChange = (e, othValue=null) => {
     e.preventDefault();
     let copyGuesses = JSON.parse(JSON.stringify(guesses));
     let copyColor = JSON.parse(JSON.stringify(colors));
     
     let cpyGuess = "";
     let cpyColor = [];
+    let value = "";
 
-    let value = e.target.value.trim().toUpperCase();
-    if (value == guess || value.indexOf(" ") > -1) return;
+    if (othValue == null) {
+      value = e.target.value.trim().toUpperCase();
+    } else {
+      value = othValue;
+    }
+    
+    if (value == guess || value.indexOf(" ") > -1 || correct) return;
 
     let alph = new RegExp(`^[A-Za-z]+$`);
     if (!alph.test(value) && value.length > 0) return;
@@ -190,70 +205,101 @@ export default function Home() {
     setNumGuesses(numGuesses + 1);
   }
 
+  const onClick = (e) => {
+    let cpyGuess = guess;
+    let letter = e.target.id;
+
+    if (correct) return;
+
+    if (letter == "Enter") {
+      onSubmit(e);
+      return;
+    } else if (letter == "<<") {
+      if (cpyGuess.length > 0) {
+        cpyGuess = cpyGuess.substring(0, cpyGuess.length - 1);
+        onChange(e, cpyGuess);
+        setGuess(cpyGuess);
+      }
+
+      return;
+    }
+
+    if (cpyGuess.length < 5) {
+      cpyGuess += letter;
+      onChange(e, cpyGuess);
+      setGuess(cpyGuess);
+    }
+  }
+
   return (
-    <div className={`${loaded ? "" : "hidden"} flex h-screen`}>
-      <div className="select-none m-auto">
-        <form onSubmit={onSubmit} className={`opacity-0 ${numGuesses == 5 && !correct ? "hidden" : ""}`}>
-          <input ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit" value={guess} onChange={onChange}></input>
-        </form>      
+    <>
+      <Head>
+        <title>Wrdle</title>
+      </Head>
 
-        <center>
-          <div className={`text-xl ${numGuesses == 5 && !correct ? "" : "hidden"}`}>
-            Word was: {word}
-          </div>
-        </center>
+      <div className={`${loaded ? "" : "hidden"} flex h-screen`}>
+        <div className="select-none m-auto">
+          <form onSubmit={onSubmit} className={`opacity-0 ${numGuesses == 5 && !correct ? "hidden" : ""}`}>
+            <input ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit" value={guess} onChange={onChange}></input>
+          </form>      
 
-        <center>
-          <div className="inline-grid text-white m-5 gap-2 grid-cols-5 text-2xl">
-          {guesses.map((guss, i) => {
-            let letters = guss.split("");
-            let color = colors[i];
+          <center>
+            <div className={`text-xl ${numGuesses == 5 && !correct ? "" : "hidden"}`}>
+              Word was: {word}
+            </div>
+          </center>
 
-            return letters.map((letr, j) => {
-              return <div className={`${color[j]} w-12 h-12 rounded-lg flex`} key={j}>
-                <div className="m-auto">{letr}</div>
-              </div>
-            })
-          })}
-          </div>
-        </center>
+          <center>
+            <div className="inline-grid text-white m-5 gap-2 grid-cols-5 text-2xl">
+            {guesses.map((guss, i) => {
+              let letters = guss.split("");
+              let color = colors[i];
 
-        <div className="flex flex-col space-y-4 mt-3 m-auto">
+              return letters.map((letr, j) => {
+                return <div className={`${color[j]} w-12 h-12 rounded-lg flex`} key={j}>
+                  <div className="m-auto">{letr}</div>
+                </div>
+              })
+            })}
+            </div>
+          </center>
 
-          <div className="inline-grid gap-2 grid-cols-10 m-auto text-2xl">
-            {alphabet.slice(0, 10).map((letter, i) => {
+          <div className="flex flex-col space-y-4 mt-3 m-auto">
+            <div className="inline-grid gap-2 grid-cols-10 m-auto text-2xl">
+              {alphabet.slice(0, 10).map((letter, i) => {
+                let color = alphColors[i];
+
+                return <div onClick={onClick} className={`${color} cursor-pointer w-12 h-12 rounded-lg flex`} id={letter} key={i}>
+                  <div id={letter} className="m-auto">{letter}</div>
+                </div>
+              })}
+            </div>
+              
+            <div className="inline-grid gap-2 grid-cols-9 m-auto text-2xl">
+            {alphabet.slice(10, 19).map((letter, i) => {
+              i += 10;
               let color = alphColors[i];
 
-              return <div className={`${color} w-12 h-12 rounded-lg flex`} key={i}>
-                <div className="m-auto">{letter}</div>
+              return <div onClick={onClick} className={`${color} cursor-pointer w-12 h-12 rounded-lg flex`} id={letter} key={i}>
+                <div id={letter} className="m-auto">{letter}</div>
               </div>
             })}
-          </div>
-            
-          <div className="inline-grid gap-2 grid-cols-9 m-auto text-2xl">
-          {alphabet.slice(10, 19).map((letter, i) => {
-            i += 10;
-            let color = alphColors[i];
-
-            return <div className={`${color} w-12 h-12 rounded-lg flex`} key={i}>
-              <div className="m-auto">{letter}</div>
             </div>
-          })}
-          </div>
 
-          <div className="inline-grid gap-2 grid-cols-7 m-auto text-2xl">
-          {alphabet.slice(19).map((letter, i) => {
-            i += 19;
-            let color = alphColors[i];
+            <div className="inline-grid gap-2 grid-cols-9 m-auto text-2xl">
+            {alphabet.slice(19).map((letter, i) => {
+              i += 19;
+              let color = alphColors[i];
 
-            return <div className={`${color} w-12 h-12 rounded-lg flex`} key={i}>
-              <div className="m-auto">{letter}</div>
+              return <div onClick={onClick} className={`${color} cursor-pointer w-12 h-12 rounded-lg flex`} id={letter} key={i}>
+                <div id={letter} className="m-auto">{letter}</div>
+              </div>
+            })}
             </div>
-          })}
-          </div>
 
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
