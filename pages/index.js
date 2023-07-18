@@ -33,21 +33,7 @@ export default function Home() {
     }
   }, []);
 
-  useEffect(() => {
-    window.addEventListener('blur', keepFocus);
-    return () => {
-      window.addEventListener('blur', keepFocus);
-    }
-  }, [keepFocus])
-
-  useEffect(() => {
-    window.addEventListener("click", keepFocus);
-    return () => {
-      window.addEventListener("click", keepFocus);
-    }
-  }, [keepFocus])
-  
-  useEffect(() => {
+  const startGame = () => {    
     let gs = [];
     let cls = [];
     let cnt = [];
@@ -95,6 +81,27 @@ export default function Home() {
     setColors(cls);
     setAlphColors(alpColors);
     setWord(word.toUpperCase());
+    setNumGuesses(0);
+    setGuess("");
+    setCorrect(false);
+  }
+
+  useEffect(() => {
+    window.addEventListener('blur', keepFocus);
+    return () => {
+      window.addEventListener('blur', keepFocus);
+    }
+  }, [keepFocus])
+
+  useEffect(() => {
+    window.addEventListener("click", keepFocus);
+    return () => {
+      window.addEventListener("click", keepFocus);
+    }
+  }, [keepFocus])
+  
+  useEffect(() => {
+    startGame();
     setLoaded(true);
   }, [])
 
@@ -245,7 +252,7 @@ export default function Home() {
 
       <div className={`${loaded ? "" : "hidden"} flex h-screen`}>
         <div className="select-none m-auto">
-          <form onSubmit={onSubmit} className={`opacity-0 ${numGuesses == 6 && !correct ? "hidden" : ""}`}>
+          <form onSubmit={onSubmit} className={`opacity-0 ${numGuesses == 6 ? "hidden" : ""}`}>
             <input onPaste={prevent} onCut={prevent} ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit pointer-events-none cursor-default" value={guess} onChange={onChange}></input>
           </form>      
 
@@ -253,6 +260,7 @@ export default function Home() {
             <div className={`text-xl ${numGuesses == 6 && !correct ? "" : "hidden"}`}>
               Word was: {word}
             </div>
+            <button onClick={startGame} className={`${correct || numGuesses == 6 ? "" : "hidden"} mt-1 py-1 px-2 rounded-lg hover:text-black hover:bg-slate-400`}>New Game</button>
           </center>
 
           <center>
