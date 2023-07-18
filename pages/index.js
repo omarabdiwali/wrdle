@@ -1,11 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from "react"
-import { words } from 'popular-english-words';
 import Head from "next/head";
 
 var allWords = require('an-array-of-english-words')
 let validWords = allWords.filter(d => d.length == 5);
-
-let wrdle = words.getMostPopularLength(1000, 5);
 
 export default function Home() {
   const [word, setWord] = useState("");
@@ -17,6 +14,8 @@ export default function Home() {
   const [numGuesses, setNumGuesses] = useState(0);
   const [alphColors, setAlphColors] = useState([]);
   const [loaded, setLoaded] = useState(false);
+
+  const [prevWords, setPrevWords] = useState({});
 
   const inpRef = useRef(null);
   const alphabet = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Enter', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<<'];
@@ -39,17 +38,13 @@ export default function Home() {
     let cnt = [];
     let alpColors = [];
 
-    let randomNumber = Math.floor(Math.random() * 1000);
-    let word = wrdle[randomNumber];
+    let prevCopy = JSON.parse(JSON.stringify(prevWords));
+    let randomNumber = Math.floor(Math.random() * validWords.length);
+    let word = validWords[randomNumber];
 
-    let regText = new RegExp(`^${word}$`);
-    let valid = validWords.filter(d => regText.test(d)).length > 0;
-
-    while (!valid) {
-      randomNumber = Math.floor(Math.random() * 1000);
-      word = wrdle[randomNumber];
-      regText = new RegExp(`^${word}$`);
-      valid = validWords.filter(d => regText.test(d)).length > 0;
+    while (prevCopy[word]) {
+      randomNumber = Math.floor(Math.random() * validWords.length);
+      word = validWords[randomNumber];
     }
 
     for (let i = 0; i < 6; i++) {
@@ -77,13 +72,17 @@ export default function Home() {
     alpColors.push("bg-slate-500 text-black");
     alpColors.push("bg-slate-500 text-xs text-black");
 
+    prevCopy[word] = 1;
+
     setGuesses(gs);
     setColors(cls);
     setAlphColors(alpColors);
     setWord(word.toUpperCase());
+    
     setNumGuesses(0);
     setGuess("");
     setCorrect(false);
+    setPrevWords(prevCopy);
   }
 
   useEffect(() => {
