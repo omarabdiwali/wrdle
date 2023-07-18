@@ -233,6 +233,10 @@ export default function Home() {
     }
   }
 
+  const prevent = (e) => {
+    e.preventDefault();
+  }
+
   return (
     <>
       <Head>
@@ -241,8 +245,8 @@ export default function Home() {
 
       <div className={`${loaded ? "" : "hidden"} flex h-screen`}>
         <div className="select-none m-auto">
-          <form onSubmit={onSubmit} className={`opacity-0 cursor-default ${numGuesses == 6 && !correct ? "hidden" : ""}`}>
-            <input ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit" value={guess} onChange={onChange}></input>
+          <form onSubmit={onSubmit} className={`opacity-0 ${numGuesses == 6 && !correct ? "hidden" : ""}`}>
+            <input onPaste={prevent} onCut={prevent} ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit pointer-events-none cursor-default" value={guess} onChange={onChange}></input>
           </form>      
 
           <center>
