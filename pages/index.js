@@ -368,7 +368,7 @@ export default function Home() {
             })}
             </div>
           </div>
-          <div className={`m-auto w-2/3 flex flex-col ${(correct || numGuesses == 6) && definitions.length > 0 ? "" : "hidden"}`}>
+          <div className={`m-auto flex flex-col ${(correct || numGuesses == 6) && definitions.length > 0 ? "" : "hidden"}`}>
             <div className="font-black">{word.toLowerCase()}</div>
             {definitions.map((defines, i) => {
               return <div key={i}>{i+1}. {defines}</div>
