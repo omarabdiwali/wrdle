@@ -97,7 +97,7 @@ export default function Home() {
     }
 
     placeholderColors.push(rowColors);
-    placeholderColors.push(["bg-slate-400", "bg-slate-400", "bg-slate-400", "bg-slate-400", "bg-slate-400"])
+    placeholderColors.push(["bg-slate-400", "bg-slate-400", "bg-slate-400", "bg-slate-400", "bg-slate-400"]);
     alpColors.push("bg-slate-500 text-black");
     alpColors.push("bg-slate-500 text-black");
     alpColors.push("bg-slate-500 text-xs text-black");
@@ -180,9 +180,9 @@ export default function Home() {
   const getAllDefintions = async (data) => {
     let definitions = [];
 
-    await Promise.all(data.map(async (word, _) => {
+    await Promise.all(data.map((word, _) => {
       let meanings = word.meanings;
-      meanings.map(async (mean, _) => {
+      meanings.map((mean, _) => {
         let defines = mean.definitions;
         defines.map((def, _) => {
           definitions.push(def.definition)
