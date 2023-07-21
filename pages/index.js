@@ -230,7 +230,7 @@ export default function Home() {
 
     if (count == guess.length) setCorrect(true);
 
-    if (count == guess.length || numGuesses + 1 == 1) {
+    if (numGuesses + 1 == 1) {
       getDefinition(word.toLowerCase()).then(data => {
         if (data.length > 0) {
           getAllDefintions(data).then(allDef => {
