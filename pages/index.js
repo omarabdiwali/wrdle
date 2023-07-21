@@ -30,7 +30,6 @@ export default function Home() {
 
   const autoFocusFn = useCallback(element => {
     if (element) {
-      element.preventDefault();
       element.focus({ preventScroll: true });
     }
   }, []);
