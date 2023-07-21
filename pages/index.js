@@ -33,32 +33,61 @@ export default function Home() {
     }
   }, []);
 
-  const startGame = () => {    
-    let gs = [];
-    let cls = [];
-    let cnt = [];
+  const getDefinition = async (wrd) => {
+    let url = `https://api.dictionaryapi.dev/api/v2/entries/en/${wrd}`;
+
+    return await fetch(url)
+      .then(res => res.json())
+      .then(data => { return data; })
+      .catch(err => console.log(err));
+  }
+
+  const startGame = async () => {    
+    let placeholderGuesses = [];
+    let placeholderColors = [];
+    let rowColors = [];
     let alpColors = [];
 
     let prevCopy = JSON.parse(JSON.stringify(prevWords));
     let randomNumber = Math.floor(Math.random() * validWords.length);
     let word = validWords[randomNumber];
 
-    while (prevCopy[word]) {
+    let run = true;
+    let data = await getDefinition(word);
+
+    if (data.message) {
+      run = true;
+    } else {
+      run = false;
+    }
+
+    let count = 0;
+
+    while (prevCopy[word] || (run && count < 10)) {
       randomNumber = Math.floor(Math.random() * validWords.length);
       word = validWords[randomNumber];
+      data = await getDefinition(word);
+      
+      if (data.message) {
+        run = true;
+      } else {
+        run = false;
+      }
+
+      count += 1;
     }
 
     for (let i = 0; i < 6; i++) {
-      gs.push("     ")
+      placeholderGuesses.push("     ")
     }
 
     for (let i = 0; i < 25; i++) {
-      if (cnt.length == 5) {
-        cls.push(cnt);
-        cnt = []
+      if (rowColors.length == 5) {
+        placeholderColors.push(rowColors);
+        rowColors = []
       }
 
-      cnt.push("bg-slate-400");
+      rowColors.push("bg-slate-400");
 
       if (i == 19) {
         alpColors.push("bg-slate-500 text-xs text-black");
@@ -67,16 +96,16 @@ export default function Home() {
       }
     }
 
-    cls.push(cnt);
-    cls.push(["bg-slate-400", "bg-slate-400", "bg-slate-400", "bg-slate-400", "bg-slate-400"])
+    placeholderColors.push(rowColors);
+    placeholderColors.push(["bg-slate-400", "bg-slate-400", "bg-slate-400", "bg-slate-400", "bg-slate-400"])
     alpColors.push("bg-slate-500 text-black");
     alpColors.push("bg-slate-500 text-black");
     alpColors.push("bg-slate-500 text-xs text-black");
 
     prevCopy[word] = 1;
 
-    setGuesses(gs);
-    setColors(cls);
+    setGuesses(placeholderGuesses);
+    setColors(placeholderColors);
     setAlphColors(alpColors);
     setWord(word.toUpperCase());
     
@@ -102,8 +131,9 @@ export default function Home() {
   }, [keepFocus])
   
   useEffect(() => {
-    startGame();
-    setLoaded(true);
+    startGame().then(() => {
+      setLoaded(true);
+    });
   }, [])
 
   const onChange = (e, othValue=null) => {
@@ -145,15 +175,6 @@ export default function Home() {
       setGuesses(copyGuesses);
       setColors(copyColor);
     }
-  }
-
-  const getDefinition = async (wrd) => {
-    let url = `https://api.dictionaryapi.dev/api/v2/entries/en/${wrd}`
-
-    return await fetch(url)
-      .then(res => res.json())
-      .then(data => { return data; })
-      .catch(err => console.error(err));
   }
 
   const getAllDefintions = async (data) => {
@@ -347,8 +368,8 @@ export default function Home() {
             })}
             </div>
           </div>
-          <div className={`mx-3 flex flex-col ${(correct || numGuesses == 6) && definitions.length > 0 ? "" : "hidden"}`}>
-            <div className="font-bold">{word.toLowerCase()}</div>
+          <div className={`m-auto w-2/3 flex flex-col ${(correct || numGuesses == 6) && definitions.length > 0 ? "" : "hidden"}`}>
+            <div className="font-black">{word.toLowerCase()}</div>
             {definitions.map((defines, i) => {
               return <div key={i}>{i+1}. {defines}</div>
             })}
