@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react"
 import Head from "next/head";
 
-var allWords = require('an-array-of-english-words')
+var allWords = require('an-array-of-english-words');
 let validWords = allWords.filter(d => d.length == 5);
 
 export default function Home() {
@@ -16,6 +16,7 @@ export default function Home() {
   const [loaded, setLoaded] = useState(false);
 
   const [prevWords, setPrevWords] = useState({});
+  const [definitions, setDefinitions] = useState([]);
 
   const inpRef = useRef(null);
   const alphabet = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Enter', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<<'];
@@ -83,6 +84,7 @@ export default function Home() {
     setGuess("");
     setCorrect(false);
     setPrevWords(prevCopy);
+    setDefinitions([]);
   }
 
   useEffect(() => {
@@ -145,6 +147,31 @@ export default function Home() {
     }
   }
 
+  const getDefinition = async (wrd) => {
+    let url = `https://api.dictionaryapi.dev/api/v2/entries/en/${wrd}`
+
+    return await fetch(url)
+      .then(res => res.json())
+      .then(data => { return data; })
+      .catch(err => console.error(err));
+  }
+
+  const getAllDefintions = async (data) => {
+    let definitions = [];
+
+    await Promise.all(data.map(async (word, _) => {
+      let meanings = word.meanings;
+      meanings.map(async (mean, _) => {
+        let defines = mean.definitions;
+        defines.map((def, _) => {
+          definitions.push(def.definition)
+        })
+      })
+    }))
+
+    return definitions.slice(0, 5);
+  }
+
   const onSubmit = (e) => {
     e.preventDefault();
     if (guess.length != 5 || correct || numGuesses == 6) return;
@@ -202,7 +229,17 @@ export default function Home() {
     }
 
     if (count == guess.length) setCorrect(true);
-    
+
+    if (count == guess.length || numGuesses + 1 == 1) {
+      getDefinition(word.toLowerCase()).then(data => {
+        if (data.length > 0) {
+          getAllDefintions(data).then(allDef => {
+            setDefinitions(allDef);
+          });
+        }
+      })
+    }
+
     copyColor[numGuesses] = colorArr;
     copyGuesses[numGuesses] = guess;
 
@@ -277,7 +314,7 @@ export default function Home() {
             </div>
           </center>
 
-          <div className="flex flex-col space-y-4 mt-3 m-auto">
+          <div className={`flex flex-col space-y-4 mt-3 m-auto ${(correct || numGuesses == 6) && definitions.length > 0 ? "hidden" : ""}`}>
             <div className="inline-grid gap-2 grid-cols-10 m-auto text-2xl">
               {alphabet.slice(0, 10).map((letter, i) => {
                 let color = alphColors[i];
@@ -309,7 +346,12 @@ export default function Home() {
               </div>
             })}
             </div>
-
+          </div>
+          <div className={`mx-3 flex flex-col ${(correct || numGuesses == 6) && definitions.length > 0 ? "" : "hidden"}`}>
+            <div className="font-bold">{word.toLowerCase()}</div>
+            {definitions.map((defines, i) => {
+              return <div key={i}>{i+1}. {defines}</div>
+            })}
           </div>
         </div>
       </div>
