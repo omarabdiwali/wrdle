@@ -17,14 +17,12 @@ export default function Home() {
 
   const [prevWords, setPrevWords] = useState({});
   const [definitions, setDefinitions] = useState([]);
+  const [mobile, setMobile] = useState(true);
 
   const inpRef = useRef(null);
   const alphabet = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Enter', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<<'];
 
   const keepFocus = useCallback(e => {
-    if (e) {
-      e.preventDefault();
-    }
     if (inpRef) {
       inpRef.current.focus({ preventScroll: true });
     }
@@ -120,6 +118,7 @@ export default function Home() {
   }
 
   useEffect(() => {
+    if (window.innerWidth < 570) return;
     window.addEventListener('blur', keepFocus);
     return () => {
       window.addEventListener('blur', keepFocus);
@@ -127,6 +126,7 @@ export default function Home() {
   }, [keepFocus])
 
   useEffect(() => {
+    if (window.innerWidth < 570) return;
     window.addEventListener("click", keepFocus);
     return () => {
       window.addEventListener("click", keepFocus);
@@ -134,6 +134,9 @@ export default function Home() {
   }, [keepFocus])
   
   useEffect(() => {
+    if (window.innerWidth < 570) {
+      setMobile(true);
+    }
     startGame().then(() => {
       setLoaded(true);
     });
@@ -312,7 +315,7 @@ export default function Home() {
 
       <div className={`${loaded ? "" : "hidden"} flex h-screen`}>
         <div className="select-none m-auto">
-          <form onSubmit={onSubmit} className={`opacity-0 ${numGuesses == 6 ? "hidden" : ""}`}>
+          <form onSubmit={onSubmit} className={`opacity-0 ${numGuesses == 6 || mobile ? "hidden" : ""}`}>
             <input onPaste={prevent} onCut={prevent} ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit pointer-events-none cursor-default" value={guess} onChange={onChange}></input>
           </form>      
 
@@ -343,7 +346,7 @@ export default function Home() {
               {alphabet.slice(0, 10).map((letter, i) => {
                 let color = alphColors[i];
 
-                return <div onClick={onClick} className={`${color} cursor-pointer w-12 h-12 rounded-lg flex`} id={letter} key={i}>
+                return <div onClick={onClick} className={`${color} cursor-pointer ${mobile ? "w-8 h-8" : "w-12 h-12"} rounded-lg flex`} id={letter} key={i}>
                   <div id={letter} className="m-auto">{letter}</div>
                 </div>
               })}
@@ -354,7 +357,7 @@ export default function Home() {
               i += 10;
               let color = alphColors[i];
 
-              return <div onClick={onClick} className={`${color} cursor-pointer w-12 h-12 rounded-lg flex`} id={letter} key={i}>
+              return <div onClick={onClick} className={`${color} cursor-pointer ${mobile ? "w-8 h-8" : "w-12 h-12"} rounded-lg flex`} id={letter} key={i}>
                 <div id={letter} className="m-auto">{letter}</div>
               </div>
             })}
@@ -365,7 +368,7 @@ export default function Home() {
               i += 19;
               let color = alphColors[i];
 
-              return <div onClick={onClick} className={`${color} cursor-pointer w-12 h-12 rounded-lg flex`} id={letter} key={i}>
+              return <div onClick={onClick} className={`${color} cursor-pointer ${mobile ? "w-8 h-8" : "w-12 h-12"} rounded-lg flex`} id={letter} key={i}>
                 <div id={letter} className="m-auto">{letter}</div>
               </div>
             })}
