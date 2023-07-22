@@ -20,6 +20,8 @@ export default function Home() {
   const [mobile, setMobile] = useState(false);
   const [disabled, setDisabled] = useState(false);
 
+  const [hasDef, setHasDef] = useState({});
+
   const inpRef = useRef(null);
   const alphabet = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Enter', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<<'];
 
@@ -54,31 +56,20 @@ export default function Home() {
 
     let prevCopy = JSON.parse(JSON.stringify(prevWords));
     let randomNumber = Math.floor(Math.random() * validWords.length);
+    let defCopy = JSON.parse(JSON.stringify(hasDef));
     let word = validWords[randomNumber];
 
-    let run = true;
     let data = await getDefinition(word);
+    defCopy[word] = data.message == undefined;
 
-    if (data.message) {
-      run = true;
-    } else {
-      run = false;
-    }
-
-    let count = 0;
-
-    while (prevCopy[word] || (run && count < 10)) {
+    while (prevCopy[word] || defCopy[word] == false) {
       randomNumber = Math.floor(Math.random() * validWords.length);
       word = validWords[randomNumber];
-      data = await getDefinition(word);
-      
-      if (data.message) {
-        run = true;
-      } else {
-        run = false;
-      }
 
-      count += 1;
+      if (defCopy[word] == undefined) {
+        data = await getDefinition(word);
+        defCopy[word] = data.message == undefined;
+      }
     }
 
     for (let i = 0; i < 6; i++) {
@@ -112,6 +103,7 @@ export default function Home() {
     setColors(placeholderColors);
     setAlphColors(alpColors);
     setWord(word.toUpperCase());
+    setHasDef(defCopy);
     
     setNumGuesses(0);
     setGuess("");
