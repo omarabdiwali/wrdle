@@ -18,6 +18,7 @@ export default function Home() {
   const [prevWords, setPrevWords] = useState({});
   const [definitions, setDefinitions] = useState([]);
   const [mobile, setMobile] = useState(false);
+  const [disabled, setDisabled] = useState(false);
 
   const inpRef = useRef(null);
   const alphabet = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Enter', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<<'];
@@ -44,6 +45,8 @@ export default function Home() {
   }
 
   const startGame = async () => {    
+    setDisabled(true);
+
     let placeholderGuesses = [];
     let placeholderColors = [];
     let rowColors = [];
@@ -115,6 +118,7 @@ export default function Home() {
     setCorrect(false);
     setPrevWords(prevCopy);
     setDefinitions([]);
+    setDisabled(false);
   }
 
   useEffect(() => {
@@ -323,7 +327,7 @@ export default function Home() {
             <div className={`text-xl ${numGuesses == 6 && !correct ? "" : "hidden"}`}>
               Word was: {word}
             </div>
-            <button onClick={startGame} className={`${correct || numGuesses == 6 ? "" : "hidden"} mt-1 py-1 px-2 rounded-lg hover:text-black hover:bg-slate-400`}>New Game</button>
+            <button disabled={disabled} onClick={startGame} className={`${correct || numGuesses == 6 ? "" : "hidden"} disabled:opacity-60 disabled:cursor-default mt-1 py-1 px-2 rounded-lg hover:text-black hover:bg-slate-400`}>New Game</button>
           </center>
 
           <center>
