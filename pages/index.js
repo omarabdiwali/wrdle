@@ -59,8 +59,10 @@ export default function Home() {
     let defCopy = JSON.parse(JSON.stringify(hasDef));
     let word = validWords[randomNumber];
 
-    if (defCopy[word] == undefined) {
-      let data = await getDefinition(word);
+    let data = defCopy[word]
+
+    if (data == undefined) {
+      data = await getDefinition(word);
       defCopy[word] = data.message == undefined;
     }
 
@@ -116,7 +118,6 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (window.innerWidth < 570) return;
     window.addEventListener('blur', keepFocus);
     return () => {
       window.addEventListener('blur', keepFocus);
@@ -124,7 +125,6 @@ export default function Home() {
   }, [keepFocus])
 
   useEffect(() => {
-    if (window.innerWidth < 570) return;
     window.addEventListener("click", keepFocus);
     return () => {
       window.addEventListener("click", keepFocus);
@@ -313,7 +313,7 @@ export default function Home() {
 
       <div className={`${loaded ? "" : "hidden"} flex h-screen`}>
         <div className="select-none m-auto">
-          <form onSubmit={onSubmit} className={`opacity-0 ${numGuesses == 6 || mobile ? "hidden" : ""}`}>
+          <form onSubmit={onSubmit} className={`fixed opacity-0 ${numGuesses == 6 ? "hidden" : ""}`}>
             <input onPaste={prevent} onCut={prevent} ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit pointer-events-none cursor-default" value={guess} onChange={onChange}></input>
           </form>      
 
