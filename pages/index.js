@@ -276,6 +276,8 @@ export default function Home() {
   }
 
   const onClick = (e) => {
+    e.preventDefault();
+    
     let cpyGuess = guess;
     let letter = e.target.id;
 
