@@ -59,9 +59,9 @@ export default function Home() {
     let defCopy = JSON.parse(JSON.stringify(hasDef));
     let word = validWords[randomNumber];
 
-    let data = defCopy[word]
+    let data;
 
-    if (data == undefined) {
+    if (defCopy[word] == undefined) {
       data = await getDefinition(word);
       defCopy[word] = data.message == undefined;
     }
