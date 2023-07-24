@@ -315,7 +315,7 @@ export default function Home() {
 
       <div className={`${loaded ? "" : "hidden"} flex h-screen`}>
         <div className="select-none m-auto">
-          <form onSubmit={onSubmit} className={`fixed opacity-0 ${numGuesses == 6 ? "hidden" : ""}`}>
+          <form onSubmit={onSubmit} className={`fixed opacity-0 ${numGuesses == 6 || correct ? "hidden" : ""}`}>
             <input onPaste={prevent} onCut={prevent} ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit pointer-events-none cursor-default" value={guess} onChange={onChange}></input>
           </form>      
 
