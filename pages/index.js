@@ -23,17 +23,21 @@ export default function Home() {
   const [hasDef, setHasDef] = useState({});
 
   const inpRef = useRef(null);
-  const alphabet = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Enter', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<<'];
+  const alphabet = [
+    'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
+    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',
+    'Enter', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<<'
+  ];
 
-  const keepFocus = useCallback(e => {
+  const keepFocus = useCallback(_ => {
     if (inpRef) {
-      inpRef.current.focus({ preventScroll: true });
+      inpRef.current.focus();
     }
   }, [])
 
   const autoFocusFn = useCallback(element => {
     if (element) {
-      element.focus({ preventScroll: true });
+      element.focus();
     }
   }, []);
 
@@ -59,10 +63,8 @@ export default function Home() {
     let defCopy = JSON.parse(JSON.stringify(hasDef));
     let word = validWords[randomNumber];
 
-    let data;
-
     if (defCopy[word] == undefined) {
-      data = await getDefinition(word);
+      let data = await getDefinition(word);
       defCopy[word] = data.message == undefined;
     }
 
@@ -71,7 +73,7 @@ export default function Home() {
       word = validWords[randomNumber];
 
       if (defCopy[word] == undefined) {
-        data = await getDefinition(word);
+        let data = await getDefinition(word);
         defCopy[word] = data.message == undefined;
       }
     }
