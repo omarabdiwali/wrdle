@@ -46,6 +46,22 @@ export default function Home() {
       .catch(err => console.log(err));
   }
 
+  const getAllDefinitions = async (data) => {
+    let definitions = [];
+
+    await Promise.all(data.map((word, _) => {
+      let meanings = word.meanings;
+      meanings.map((mean, _) => {
+        let defines = mean.definitions;
+        defines.map((def, _) => {
+          definitions.push(def.definition)
+        })
+      })
+    }))
+
+    return definitions.slice(0, 5);
+  }
+
   const startGame = async (validWords) => {    
     setDisabled(true);
 
@@ -62,6 +78,14 @@ export default function Home() {
       randomNumber = Math.floor(Math.random() * validWords.length);
       word = validWords[randomNumber];
     }
+
+    getDefinition(word).then(data => {
+      if (data.length > 0) {
+        getAllDefinitions(data).then(allDef => {
+          setDefinitions(allDef);
+        });
+      }
+    })
 
     for (let i = 0; i < 6; i++) {
       placeholderGuesses.push("     ")
@@ -181,22 +205,6 @@ export default function Home() {
     }
   }
 
-  const getAllDefinitions = async (data) => {
-    let definitions = [];
-
-    await Promise.all(data.map((word, _) => {
-      let meanings = word.meanings;
-      meanings.map((mean, _) => {
-        let defines = mean.definitions;
-        defines.map((def, _) => {
-          definitions.push(def.definition)
-        })
-      })
-    }))
-
-    return definitions.slice(0, 5);
-  }
-
   const onSubmit = (e) => {
     e.preventDefault();
     if (guess.length != 5 || correct || numGuesses == 6) return;
@@ -255,16 +263,6 @@ export default function Home() {
 
     if (count == guess.length) setCorrect(true);
 
-    if (numGuesses + 1 == 1) {
-      getDefinition(word.toLowerCase()).then(data => {
-        if (data.length > 0) {
-          getAllDefinitions(data).then(allDef => {
-            setDefinitions(allDef);
-          });
-        }
-      })
-    }
-
     copyColor[numGuesses] = colorArr;
     copyGuesses[numGuesses] = guess;
 
@@ -277,26 +275,21 @@ export default function Home() {
 
   const onClick = (e) => {
     e.preventDefault();
-    
+
     let cpyGuess = guess;
     let letter = e.target.id;
-
     if (correct || numGuesses == 6) return;
 
     if (letter == "Enter") {
       onSubmit(e);
-      return;
-    } else if (letter == "<<") {
-      if (cpyGuess.length > 0) {
-        cpyGuess = cpyGuess.substring(0, cpyGuess.length - 1);
-        onChange(e, cpyGuess);
-        setGuess(cpyGuess);
-      }
-
-      return;
     }
-
-    if (cpyGuess.length < 5) {
+    else if (letter == "<<") {
+      if (cpyGuess.length == 0) return;
+      cpyGuess = cpyGuess.substring(0, cpyGuess.length - 1);
+      onChange(e, cpyGuess);
+      setGuess(cpyGuess);
+    }
+    else if (cpyGuess.length < 5) {
       cpyGuess += letter;
       onChange(e, cpyGuess);
       setGuess(cpyGuess);
@@ -305,6 +298,19 @@ export default function Home() {
 
   const prevent = (e) => {
     e.preventDefault();
+  }
+
+  if (!loaded) {
+    return (
+      <div className="flex h-screen">
+        <div className="m-auto">
+          <svg className="animate-spin h-10 w-10 mr-3 text-white" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -319,25 +325,27 @@ export default function Home() {
             <input onPaste={prevent} onCut={prevent} ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit pointer-events-none cursor-default" value={guess} onChange={onChange}></input>
           </form>      
 
-          <center>
-            <div className={`text-xl ${numGuesses == 6 && !correct ? "" : "hidden"}`}>
-              Word was: {word}
-            </div>
-            <button disabled={disabled} onClick={() => startGame(words)} className={`${correct || numGuesses == 6 ? "" : "hidden"} disabled:opacity-60 disabled:cursor-default mt-1 py-1 px-2 rounded-lg hover:text-black hover:bg-slate-400`}>New Game</button>
+          {numGuesses == 6 || correct ? (
+            <center>
+              <div className={`text-xl ${numGuesses == 6 && !correct ? "" : "hidden"}`}>
+                Word was: {word}
+              </div>
+              <button disabled={disabled} onClick={() => startGame(words)} className={`${correct || numGuesses == 6 ? "" : "hidden"} disabled:opacity-60 disabled:cursor-default mt-1 py-1 px-2 rounded-lg hover:text-black hover:bg-slate-400`}>New Game</button>
           </center>
+          ) : ""}
 
           <center>
             <div className="inline-grid text-white m-5 gap-2 grid-cols-5 text-2xl">
-            {guesses.map((guss, i) => {
-              let letters = guss.split("");
-              let color = colors[i];
+              {guesses.map((guss, i) => {
+                let letters = guss.split("");
+                let color = colors[i];
 
-              return letters.map((letr, j) => {
-                return <div className={`${color[j]} w-12 h-12 rounded-lg flex`} key={j}>
-                  <div className="m-auto">{letr}</div>
-                </div>
-              })
-            })}
+                return letters.map((letr, j) => {
+                  return <div className={`${color[j]} w-12 h-12 rounded-lg flex`} key={j}>
+                    <div className="m-auto">{letr}</div>
+                  </div>
+                })
+              })}
             </div>
           </center>
 
@@ -353,33 +361,36 @@ export default function Home() {
             </div>
               
             <div className="inline-grid gap-2 grid-cols-9 m-auto text-2xl">
-            {alphabet.slice(10, 19).map((letter, i) => {
-              i += 10;
-              let color = alphColors[i];
+              {alphabet.slice(10, 19).map((letter, i) => {
+                i += 10;
+                let color = alphColors[i];
 
-              return <div onClick={onClick} className={`${color} cursor-pointer ${mobile ? "w-8 h-8" : "w-12 h-12"} rounded-lg flex`} id={letter} key={i}>
-                <div id={letter} className="m-auto">{letter}</div>
-              </div>
-            })}
+                return <div onClick={onClick} className={`${color} cursor-pointer ${mobile ? "w-8 h-8" : "w-12 h-12"} rounded-lg flex`} id={letter} key={i}>
+                  <div id={letter} className="m-auto">{letter}</div>
+                </div>
+              })}
             </div>
 
             <div className="inline-grid gap-2 grid-cols-9 m-auto text-2xl">
-            {alphabet.slice(19).map((letter, i) => {
-              i += 19;
-              let color = alphColors[i];
+              {alphabet.slice(19).map((letter, i) => {
+                i += 19;
+                let color = alphColors[i];
 
-              return <div onClick={onClick} className={`${color} cursor-pointer ${mobile ? "w-8 h-8" : "w-12 h-12"} rounded-lg flex`} id={letter} key={i}>
-                <div id={letter} className="m-auto">{letter}</div>
-              </div>
-            })}
+                return <div onClick={onClick} className={`${color} cursor-pointer ${mobile ? "w-8 h-8" : "w-12 h-12"} rounded-lg flex`} id={letter} key={i}>
+                  <div id={letter} className="m-auto">{letter}</div>
+                </div>
+              })}
             </div>
           </div>
-          <div className={`m-auto mx-3 flex flex-col ${(correct || numGuesses == 6) && definitions.length > 0 ? "" : "hidden"}`}>
-            <div className="font-black">{word.toLowerCase()}</div>
-            {definitions.map((defines, i) => {
-              return <div key={i}>{i+1}. {defines}</div>
-            })}
+          
+          {numGuesses == 6 || correct ? (
+            <div className={`m-auto mx-3 flex flex-col`}>
+              <div className="font-black">{word.toLowerCase()}</div>
+              {definitions.map((defines, i) => {
+                return <div key={i}>{i+1}. {defines}</div>
+              })}
           </div>
+          ) : ""}
         </div>
       </div>
     </>
