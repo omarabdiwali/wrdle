@@ -1,9 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react"
 import Head from "next/head";
 
-var allWords = require('an-array-of-english-words');
-let validWords = allWords.filter(d => d.length == 5);
-
 export default function Home() {
   const [word, setWord] = useState("");
   const [guess, setGuess] = useState("");
@@ -21,6 +18,7 @@ export default function Home() {
   const [disabled, setDisabled] = useState(false);
 
   const [hasDef, setHasDef] = useState({});
+  const [words, setWords] = useState([]); 
 
   const inpRef = useRef(null);
   const alphabet = [
@@ -50,7 +48,7 @@ export default function Home() {
       .catch(err => console.log(err));
   }
 
-  const startGame = async () => {    
+  const startGame = async (validWords) => {    
     setDisabled(true);
 
     let placeholderGuesses = [];
@@ -63,19 +61,9 @@ export default function Home() {
     let defCopy = JSON.parse(JSON.stringify(hasDef));
     let word = validWords[randomNumber];
 
-    if (defCopy[word] == undefined) {
-      let data = await getDefinition(word);
-      defCopy[word] = data.message == undefined;
-    }
-
-    while (prevCopy[word] || defCopy[word] == false) {
+    while (prevCopy[word]) {
       randomNumber = Math.floor(Math.random() * validWords.length);
       word = validWords[randomNumber];
-
-      if (defCopy[word] == undefined) {
-        let data = await getDefinition(word);
-        defCopy[word] = data.message == undefined;
-      }
     }
 
     for (let i = 0; i < 6; i++) {
@@ -137,9 +125,23 @@ export default function Home() {
     if (window.innerWidth < 570) {
       setMobile(true);
     }
-    startGame().then(() => {
-      setLoaded(true);
-    });
+
+    const getAllWords = async () => {
+      return await fetch("/api/getWords").then(res => res.json())
+        .then(data => { return data; }).catch(err => console.error(err));
+    }
+
+    getAllWords().then(data => {
+      if (data.message === "Error") {
+        console.error(data.error);
+      } else {
+        startGame(data.message).then(() => {
+          setWords(data.message);
+          setLoaded(true);
+        })
+      }
+    })
+
   }, [])
 
   const onChange = (e, othValue=null) => {
@@ -183,7 +185,7 @@ export default function Home() {
     }
   }
 
-  const getAllDefintions = async (data) => {
+  const getAllDefinitions = async (data) => {
     let definitions = [];
 
     await Promise.all(data.map((word, _) => {
@@ -204,7 +206,7 @@ export default function Home() {
     if (guess.length != 5 || correct || numGuesses == 6) return;
 
     let regText = new RegExp(`^${guess.toLowerCase()}$`);
-    let valid = validWords.filter(d => regText.test(d)).length > 0;
+    let valid = words.filter(d => regText.test(d)).length > 0;
 
     if (!valid) return;
 
@@ -260,7 +262,7 @@ export default function Home() {
     if (numGuesses + 1 == 1) {
       getDefinition(word.toLowerCase()).then(data => {
         if (data.length > 0) {
-          getAllDefintions(data).then(allDef => {
+          getAllDefinitions(data).then(allDef => {
             setDefinitions(allDef);
           });
         }
@@ -325,7 +327,7 @@ export default function Home() {
             <div className={`text-xl ${numGuesses == 6 && !correct ? "" : "hidden"}`}>
               Word was: {word}
             </div>
-            <button disabled={disabled} onClick={startGame} className={`${correct || numGuesses == 6 ? "" : "hidden"} disabled:opacity-60 disabled:cursor-default mt-1 py-1 px-2 rounded-lg hover:text-black hover:bg-slate-400`}>New Game</button>
+            <button disabled={disabled} onClick={() => startGame(words)} className={`${correct || numGuesses == 6 ? "" : "hidden"} disabled:opacity-60 disabled:cursor-default mt-1 py-1 px-2 rounded-lg hover:text-black hover:bg-slate-400`}>New Game</button>
           </center>
 
           <center>
