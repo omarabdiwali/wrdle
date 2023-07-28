@@ -16,8 +16,6 @@ export default function Home() {
   const [definitions, setDefinitions] = useState([]);
   const [mobile, setMobile] = useState(false);
   const [disabled, setDisabled] = useState(false);
-
-  const [hasDef, setHasDef] = useState({});
   const [words, setWords] = useState([]); 
 
   const inpRef = useRef(null);
@@ -58,7 +56,6 @@ export default function Home() {
 
     let prevCopy = JSON.parse(JSON.stringify(prevWords));
     let randomNumber = Math.floor(Math.random() * validWords.length);
-    let defCopy = JSON.parse(JSON.stringify(hasDef));
     let word = validWords[randomNumber];
 
     while (prevCopy[word]) {
@@ -97,9 +94,8 @@ export default function Home() {
     setColors(placeholderColors);
     setAlphColors(alpColors);
     setWord(word.toUpperCase());
-    setHasDef(defCopy);
-    
     setNumGuesses(0);
+
     setGuess("");
     setCorrect(false);
     setPrevWords(prevCopy);
