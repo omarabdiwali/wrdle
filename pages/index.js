@@ -54,15 +54,15 @@ export default function Home() {
       meanings.map((mean, _) => {
         let defines = mean.definitions;
         defines.map((def, _) => {
-          definitions.push(def.definition)
+          definitions.push(def.definition);
         })
       })
     }))
 
-    return definitions.slice(0, 5);
+    return definitions;
   }
 
-  const startGame = async (validWords) => {    
+  const startGame = async (validWords) => {
     setDisabled(true);
 
     let placeholderGuesses = [];
@@ -135,6 +135,18 @@ export default function Home() {
   }, [keepFocus])
 
   useEffect(() => {
+    window.addEventListener("resize", () => {
+      setMobile(window.innerWidth < 600);
+    });
+
+    return () => {
+      window.addEventListener("resize", () => {
+        setMobile(window.innerWidth < 600);
+      });
+    }
+  })
+
+  useEffect(() => {
     window.addEventListener("click", keepFocus);
     return () => {
       window.addEventListener("click", keepFocus);
@@ -142,9 +154,7 @@ export default function Home() {
   }, [keepFocus])
   
   useEffect(() => {
-    if (window.innerWidth < 570) {
-      setMobile(true);
-    }
+    setMobile(window.innerWidth < 600);
 
     const getAllWords = async () => {
       return await fetch("/api/getWords").then(res => res.json())
@@ -320,7 +330,7 @@ export default function Home() {
       </Head>
 
       <div className={`${loaded ? "" : "hidden"} flex h-screen`}>
-        <div className="select-none m-auto">
+        <div className="select-none m-auto flex-1">
           <form onSubmit={onSubmit} className={`fixed opacity-0 ${numGuesses == 6 || correct ? "hidden" : ""}`}>
             <input onPaste={prevent} onCut={prevent} ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit pointer-events-none cursor-default" value={guess} onChange={onChange}></input>
           </form>      
@@ -382,16 +392,25 @@ export default function Home() {
               })}
             </div>
           </div>
-          
-          {numGuesses == 6 || correct ? (
-            <div className={`m-auto mx-3 flex flex-col`}>
+
+          {(numGuesses == 6 || correct) && mobile ? (
+            <div className={`m-auto mx-4 flex flex-col`}>
               <div className="font-black">{word.toLowerCase()}</div>
-              {definitions.map((defines, i) => {
+              {definitions.slice(0, 5).map((defines, i) => {
                 return <div key={i}>{i+1}. {defines}</div>
               })}
-          </div>
+            </div>
           ) : ""}
         </div>
+
+        {(numGuesses == 6 || correct) && !mobile ? (
+          <div className={`scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-inherit m-auto max-h-96 overflow-auto px-3 scroll-x-auto w-2/3 flex flex-1 flex-col`}>
+            <div className="font-black">{word.toLowerCase()}</div>
+            {definitions.map((defines, i) => {
+              return <div key={i}>{i+1}. {defines}</div>
+            })}
+          </div>
+          ) : ""}
       </div>
     </>
   )
