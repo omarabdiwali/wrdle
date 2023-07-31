@@ -130,7 +130,7 @@ export default function Home() {
   useEffect(() => {
     window.addEventListener('blur', keepFocus);
     return () => {
-      window.addEventListener('blur', keepFocus);
+      window.removeEventListener('blur', keepFocus);
     }
   }, [keepFocus])
 
@@ -140,7 +140,7 @@ export default function Home() {
     });
 
     return () => {
-      window.addEventListener("resize", () => {
+      window.removeEventListener("resize", () => {
         setMobile(window.innerWidth < 600);
       });
     }
@@ -149,7 +149,7 @@ export default function Home() {
   useEffect(() => {
     window.addEventListener("click", keepFocus);
     return () => {
-      window.addEventListener("click", keepFocus);
+      window.removeEventListener("click", keepFocus);
     }
   }, [keepFocus])
   
