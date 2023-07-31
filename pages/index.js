@@ -12,7 +12,7 @@ export default function Home() {
   const [alphColors, setAlphColors] = useState([]);
   const [loaded, setLoaded] = useState(false);
 
-  const [prevWords, setPrevWords] = useState({});
+  const [notSelectedWords, setNotSelectedWords] = useState([]);
   const [definitions, setDefinitions] = useState([]);
   const [mobile, setMobile] = useState(false);
   const [disabled, setDisabled] = useState(false);
@@ -29,7 +29,7 @@ export default function Home() {
     if (inpRef) {
       inpRef.current.focus();
     }
-  }, [])
+  }, [inpRef])
 
   const autoFocusFn = useCallback(element => {
     if (element) {
@@ -70,14 +70,11 @@ export default function Home() {
     let rowColors = [];
     let alpColors = [];
 
-    let prevCopy = JSON.parse(JSON.stringify(prevWords));
     let randomNumber = Math.floor(Math.random() * validWords.length);
     let word = validWords[randomNumber];
-
-    while (prevCopy[word]) {
-      randomNumber = Math.floor(Math.random() * validWords.length);
-      word = validWords[randomNumber];
-    }
+    
+    validWords = JSON.parse(JSON.stringify(validWords));
+    validWords.splice(randomNumber, 1);
 
     getDefinition(word).then(data => {
       if (data.length > 0) {
@@ -112,8 +109,6 @@ export default function Home() {
     alpColors.push("bg-slate-500 text-black");
     alpColors.push("bg-slate-500 text-xs text-black");
 
-    prevCopy[word] = 1;
-
     setGuesses(placeholderGuesses);
     setColors(placeholderColors);
     setAlphColors(alpColors);
@@ -122,9 +117,9 @@ export default function Home() {
 
     setGuess("");
     setCorrect(false);
-    setPrevWords(prevCopy);
     setDefinitions([]);
     setDisabled(false);
+    setNotSelectedWords(validWords);
   }
 
   useEffect(() => {
@@ -337,10 +332,10 @@ export default function Home() {
 
           {numGuesses == 6 || correct ? (
             <center>
-              <div className={`text-xl ${numGuesses == 6 && !correct ? "" : "hidden"}`}>
+              <div className={`text-xl ${correct ? "hidden" : ""}`}>
                 Word was: {word}
               </div>
-              <button disabled={disabled} onClick={() => startGame(words)} className={`${correct || numGuesses == 6 ? "" : "hidden"} disabled:opacity-60 disabled:cursor-default mt-1 py-1 px-2 rounded-lg hover:text-black hover:bg-slate-400`}>New Game</button>
+              <button disabled={disabled} onClick={() => startGame(notSelectedWords)} className={`disabled:opacity-60 disabled:cursor-default mt-1 py-1 px-2 rounded-lg hover:text-black hover:bg-slate-400`}>New Game</button>
           </center>
           ) : ""}
 
