@@ -404,7 +404,7 @@ export default function Home() {
         </div>
 
         {(numGuesses == 6 || correct) && !mobile ? (
-          <div className={`scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-inherit max-h-96 m-auto overflow-auto px-3 scroll-x-auto w-2/3 flex flex-1 flex-col`}>
+          <div className={`scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-inherit max-h-96 m-auto overflow-auto pr-3 scroll-x-auto w-2/3 flex flex-1 flex-col`}>
             <div className="m-auto">
               <div className="font-black">{word.toLowerCase()}</div>
               {definitions.map((defines, i) => {
