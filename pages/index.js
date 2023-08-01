@@ -335,7 +335,7 @@ export default function Home() {
               <div className={`text-xl ${correct ? "hidden" : ""}`}>
                 Word was: {word}
               </div>
-              <button disabled={disabled} onClick={() => startGame(notSelectedWords)} className={`disabled:opacity-60 disabled:cursor-default mt-1 py-1 px-2 rounded-lg hover:text-black hover:bg-slate-400`}>New Game</button>
+              <button disabled={disabled || notSelectedWords.length == 0} onClick={() => startGame(notSelectedWords)} className={`disabled:opacity-60 disabled:cursor-default mt-1 py-1 px-2 rounded-lg hover:text-black hover:bg-slate-400`}>New Game</button>
           </center>
           ) : ""}
 
