@@ -1,5 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react"
-import Head from "next/head";
+import { useEffect, useState, useCallback } from "react"
 
 export default function Home() {
   const [word, setWord] = useState("");
@@ -18,24 +17,11 @@ export default function Home() {
   const [disabled, setDisabled] = useState(false);
   const [words, setWords] = useState([]); 
 
-  const inpRef = useRef(null);
   const alphabet = [
     'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
     'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',
     'Enter', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<<'
   ];
-
-  const keepFocus = useCallback(_ => {
-    if (inpRef) {
-      inpRef.current.focus();
-    }
-  }, [inpRef])
-
-  const autoFocusFn = useCallback(element => {
-    if (element) {
-      element.focus();
-    }
-  }, []);
 
   const getDefinition = async (wrd) => {
     let url = `https://api.dictionaryapi.dev/api/v2/entries/en/${wrd}`;
@@ -122,68 +108,13 @@ export default function Home() {
     setNotSelectedWords(validWords);
   }
 
-  useEffect(() => {
-    window.addEventListener('blur', keepFocus);
-    return () => {
-      window.removeEventListener('blur', keepFocus);
-    }
-  }, [keepFocus])
-
-  useEffect(() => {
-    window.addEventListener("resize", () => {
-      setMobile(window.innerWidth < 600);
-    });
-
-    return () => {
-      window.removeEventListener("resize", () => {
-        setMobile(window.innerWidth < 600);
-      });
-    }
-  })
-
-  useEffect(() => {
-    window.addEventListener("click", keepFocus);
-    return () => {
-      window.removeEventListener("click", keepFocus);
-    }
-  }, [keepFocus])
-  
-  useEffect(() => {
-    setMobile(window.innerWidth < 600);
-
-    const getAllWords = async () => {
-      return await fetch("/api/getWords").then(res => res.json())
-        .then(data => { return data; }).catch(err => console.error(err));
-    }
-
-    getAllWords().then(data => {
-      if (data.message === "Error") {
-        console.error(data.error);
-      } else {
-        startGame(data.message).then(() => {
-          setWords(data.message);
-          setLoaded(true);
-        })
-      }
-    })
-
-  }, [])
-
-  const onChange = (e, othValue=null) => {
-    e.preventDefault();
+  const changeGuess = (value) => {
     let copyGuesses = JSON.parse(JSON.stringify(guesses));
     let copyColor = JSON.parse(JSON.stringify(colors));
     
     let cpyGuess = "";
     let cpyColor = [];
-    let value = "";
 
-    if (othValue == null) {
-      value = e.target.value.trim().toUpperCase();
-    } else {
-      value = othValue;
-    }
-    
     if (value == guess || value.indexOf(" ") > -1 || correct) return;
 
     let alph = new RegExp(`^[A-Za-z]+$`);
@@ -210,8 +141,7 @@ export default function Home() {
     }
   }
 
-  const onSubmit = (e) => {
-    e.preventDefault();
+  const submitGuess = () => {
     if (guess.length != 5 || correct || numGuesses == 6) return;
 
     let regText = new RegExp(`^${guess.toLowerCase()}$`);
@@ -278,32 +208,82 @@ export default function Home() {
     setNumGuesses(numGuesses + 1);
   }
 
+  const validateLetter = (letter, code = null) => {
+    let cpyGuess = guess;
+
+    if (letter == "Enter") {
+      submitGuess();
+    } else if (letter == "Backspace" || letter == "<<") {
+      if (cpyGuess.length == 0) return;
+      cpyGuess = cpyGuess.substring(0, cpyGuess.length - 1);
+      changeGuess(cpyGuess);
+      setGuess(cpyGuess);
+    } else {
+      if (cpyGuess.length == 5) return;
+      if (code && code.indexOf("Key") == -1) return;
+      cpyGuess += letter.toUpperCase();
+      changeGuess(cpyGuess);
+      setGuess(cpyGuess); 
+    }
+  }
+
+  const typeMessage = useCallback(e => {
+    let letter = e.key;
+    let code = e.code;
+
+    if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
+    if (correct || numGuesses == 6) return;
+    validateLetter(letter, code);
+
+  }, [validateLetter, correct, numGuesses])
+
   const onClick = (e) => {
     e.preventDefault();
 
-    let cpyGuess = guess;
     let letter = e.target.id;
     if (correct || numGuesses == 6) return;
-
-    if (letter == "Enter") {
-      onSubmit(e);
-    }
-    else if (letter == "<<") {
-      if (cpyGuess.length == 0) return;
-      cpyGuess = cpyGuess.substring(0, cpyGuess.length - 1);
-      onChange(e, cpyGuess);
-      setGuess(cpyGuess);
-    }
-    else if (cpyGuess.length < 5) {
-      cpyGuess += letter;
-      onChange(e, cpyGuess);
-      setGuess(cpyGuess);
-    }
+    validateLetter(letter);
   }
 
-  const prevent = (e) => {
-    e.preventDefault();
-  }
+  useEffect(() => {
+    window.addEventListener("resize", () => {
+      setMobile(window.innerWidth < 600);
+    });
+
+    return () => {
+      window.removeEventListener("resize", () => {
+        setMobile(window.innerWidth < 600);
+      });
+    }
+  }, [])
+
+  useEffect(() => {
+    setMobile(window.innerWidth < 600);
+
+    const getAllWords = async () => {
+      return await fetch("/api/getWords").then(res => res.json())
+        .then(data => { return data; }).catch(err => console.error(err));
+    }
+
+    getAllWords().then(data => {
+      if (data.message === "Error") {
+        console.error(data.error);
+      } else {
+        startGame(data.message).then(() => {
+          setWords(data.message);
+          setLoaded(true);
+        })
+      }
+    })
+
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('keydown', typeMessage);
+    return (() => {
+      window.removeEventListener('keydown', typeMessage);
+    })
+  }, [typeMessage])
 
   if (!loaded) {
     return (
@@ -320,16 +300,8 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>Wrdle</title>
-      </Head>
-
       <div className={`${loaded ? "" : "hidden"} flex h-screen`}>
         <div className="select-none m-auto flex-1">
-          <form onSubmit={onSubmit} className={`fixed opacity-0 ${numGuesses == 6 || correct ? "hidden" : ""}`}>
-            <input onPaste={prevent} onCut={prevent} ref={(el)=> {inpRef.current = el; autoFocusFn(el);}} disabled={correct} placeholder="Guess..." type="text" className="bg-inherit pointer-events-none cursor-default" value={guess} onChange={onChange}></input>
-          </form>      
-
           {numGuesses == 6 || correct ? (
             <center>
               <div className={`text-xl ${correct ? "hidden" : ""}`}>
