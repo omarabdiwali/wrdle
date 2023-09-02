@@ -246,18 +246,6 @@ export default function Home() {
   }
 
   useEffect(() => {
-    window.addEventListener("resize", () => {
-      setMobile(window.innerWidth < 600);
-    });
-
-    return () => {
-      window.removeEventListener("resize", () => {
-        setMobile(window.innerWidth < 600);
-      });
-    }
-  }, [])
-
-  useEffect(() => {
     setMobile(window.innerWidth < 600);
 
     const getAllWords = async () => {
@@ -276,6 +264,18 @@ export default function Home() {
       }
     })
 
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener("resize", () => {
+      setMobile(window.innerWidth < 600);
+    });
+
+    return () => {
+      window.removeEventListener("resize", () => {
+        setMobile(window.innerWidth < 600);
+      });
+    }
   }, [])
 
   useEffect(() => {
